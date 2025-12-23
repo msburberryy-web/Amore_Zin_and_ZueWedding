@@ -88,6 +88,27 @@ const ensureEmbedUrl = (url: string): string => {
   return `https://maps.google.com/maps?q=${query}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
 };
 
+const replacePhotoPathsWithEventFolder = (data: WeddingData, eventParam: string | null): WeddingData => {
+  if (!eventParam) return data; // No event param, return data as-is
+  
+  // Convert event param to folder name: aki.mimi -> aki_mimi
+  const eventFolder = eventParam.replace(/\./g, '_');
+  
+  const replacePhotoPaths = (str: string): string => {
+    return str.replace(/\.\/photos\/\[event-folder\]/g, `./photos/${eventFolder}`);
+  };
+  
+  return {
+    ...data,
+    images: {
+      hero: replacePhotoPaths(data.images?.hero || ''),
+      groom: replacePhotoPaths(data.images?.groom || ''),
+      bride: replacePhotoPaths(data.images?.bride || '')
+    },
+    gallery: (data.gallery || []).map(img => replacePhotoPaths(img))
+  };
+};
+
 const App: React.FC = () => {
   const [data, setData] = useState<WeddingData>(DEFAULT_DATA);
   const [lang, setLang] = useState<Language>('en');
@@ -148,7 +169,19 @@ const App: React.FC = () => {
     }
 
     // Load External Configuration (The "Database")
-    fetch('./wedding-data.json')
+    // Support dynamic event parameter: ?event=aki.mimi loads wedding-data_aki_mimi.json
+    const params = new URLSearchParams(window.location.search);
+    const eventParam = params.get('event');
+    
+    // Build the data filename based on event parameter
+    let dataFile = './wedding-data.json';
+    if (eventParam) {
+      // Convert dots to underscores for filename: aki.mimi -> aki_mimi
+      const eventFileName = eventParam.replace(/\./g, '_');
+      dataFile = `./wedding-data_${eventFileName}.json`;
+    }
+    
+    fetch(dataFile)
       .then(res => {
         const contentType = res.headers.get("content-type");
         if (!res.ok || (contentType && contentType.indexOf("application/json") === -1)) {
@@ -159,7 +192,7 @@ const App: React.FC = () => {
       .then(externalData => {
         console.log("Loaded wedding configuration");
         // Merge to ensure no missing keys
-        const merged = { 
+        let merged = { 
           ...DEFAULT_DATA, 
           ...externalData,
           location: { 
@@ -172,6 +205,9 @@ const App: React.FC = () => {
           fonts: { ...DEFAULT_DATA.fonts, ...(externalData.fonts || {}) },
           visuals: { ...DEFAULT_DATA.visuals, ...(externalData.visuals || {}) },
         };
+        
+        // Replace photo paths with event-specific folder
+        merged = replacePhotoPathsWithEventFolder(merged, eventParam);
         setData(merged);
       })
       .catch((e) => {
