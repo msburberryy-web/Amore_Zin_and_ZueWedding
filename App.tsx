@@ -109,50 +109,6 @@ const replacePhotoPathsWithEventFolder = (data: WeddingData, eventParam: string 
   };
 };
 
-const renderAddress = (text?: string) : React.ReactNode => {
-  if (!text) return null;
-  // Split into paragraphs by blank lines
-  const paragraphs = text.split(/\n\s*\n/);
-  return (
-    <div className="text-gray-700 mb-6 leading-relaxed">
-      {paragraphs.map((para, pIdx) => {
-        const lines = para.split(/\n/).map(l => l.trim()).filter(Boolean);
-        if (lines.length === 0) return null;
-
-        // If first line looks like a section header (contains ':' or '：' or starts with 'By' or bracket), style as bold header
-        const first = lines[0];
-        const isHeader = /[:：]$/.test(first) || /^\[.*\]/.test(first) || /^By\s+/i.test(first) || /電車|車/.test(first);
-
-        // If subsequent lines start with '-' treat as list
-        const listLines = lines.slice(1).filter(l => /^[-\u30FB\u2022\*\s\u3000]/.test(l) || l.startsWith('-'));
-
-        return (
-          <div key={pIdx} className="mb-4">
-            {isHeader ? (
-              <div className="font-semibold text-gray-800 mb-2">{first.replace(/^\[|\]$/g, '')}</div>
-            ) : (
-              <div className="text-gray-800 mb-2">{first}</div>
-            )}
-
-            {listLines.length > 0 ? (
-              <ul className="list-disc ml-6 text-gray-700">
-                {lines.slice(1).map((ln, i) => (
-                  <li key={i} className="mb-1">{ln.replace(/^-\s*/, '')}</li>
-                ))}
-              </ul>
-            ) : (
-              // render remaining lines as normal paragraph
-              lines.slice(1).map((ln, i) => (
-                <div key={i} className="text-gray-700">{ln}</div>
-              ))
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
 const App: React.FC = () => {
   const [data, setData] = useState<WeddingData>(DEFAULT_DATA);
   const [lang, setLang] = useState<Language>('en');
@@ -355,26 +311,11 @@ const App: React.FC = () => {
   };
   const { googleUrl, downloadIcs } = generateCalendarLinks();
 
-  const processFaqText = (text: string): React.ReactNode => {
-    if (!text) return null;
+  const processFaqText = (text: string) => {
     let processed = text;
     if (processed.includes('{{time}}')) processed = processed.replace(/{{time}}/g, dateObj.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: lang !== 'ja' }));
     if (processed.includes('{{deadline}}')) processed = processed.replace(/{{deadline}}/g, new Date(data.rsvpDeadline).toLocaleDateString());
-
-    // Split by URLs and render anchors for clickable links
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const parts = processed.split(urlRegex);
-    return parts.map((part, idx) => {
-      if (/^https?:\/\//.test(part)) {
-        return (
-          <a key={idx} href={part} target="_blank" rel="noopener noreferrer" className="text-wedding-gold underline">
-            {part}
-          </a>
-        );
-      }
-      // Preserve line breaks in FAQ answer by wrapping plain text in a span with whitespace handling
-      return <span key={idx}>{part}</span>;
-    });
+    return processed;
   };
 
   const activeFont = data.fonts?.[lang] || DEFAULT_DATA.fonts[lang];
@@ -559,16 +500,8 @@ const App: React.FC = () => {
                          <iframe src={data.location.mapUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" />
                     </div>
                     <div className="flex flex-col md:flex-row justify-center gap-4">
-                          {renderAddress(data.location.address[lang])}
-                          <div className="flex flex-wrap gap-3">
-                            <a href={googleUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 bg-white border border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-widest hover:bg-wedding-text hover:text-white hover:border-wedding-text transition-colors shadow-sm">{t.googleCal}</a>
-                            <button onClick={downloadIcs} className="px-8 py-3 bg-white border border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-widest hover:bg-wedding-text hover:text-white hover:border-wedding-text transition-colors shadow-sm">{t.appleCal}</button>
-                          </div>
-                          {data.location.parkingUrl && (
-                            <div className="mt-4">
-                              <a href={data.location.parkingUrl} target="_blank" rel="noopener noreferrer" className="inline-block px-5 py-3 bg-wedding-gold text-white font-semibold rounded shadow hover:opacity-95">Parking Info</a>
-                            </div>
-                          )}
+                        <a href={googleUrl} target="_blank" rel="noopener noreferrer" className="px-8 py-3 bg-white border border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-widest hover:bg-wedding-text hover:text-white hover:border-wedding-text transition-colors shadow-sm">{t.googleCal}</a>
+                        <button onClick={downloadIcs} className="px-8 py-3 bg-white border border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-widest hover:bg-wedding-text hover:text-white hover:border-wedding-text transition-colors shadow-sm">{t.appleCal}</button>
                     </div>
                </div>
             </section>
