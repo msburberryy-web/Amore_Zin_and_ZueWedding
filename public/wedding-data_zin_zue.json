@@ -36,7 +36,7 @@
   "showSchedule": true,
   "schedule": [
     {
-      "time": "17:30",
+      "time": "18:00",
       "title": {
         "en": "Reception",
         "ja": "受付開始",
@@ -45,7 +45,7 @@
       "icon": "reception"
     },
     {
-      "time": "18:00",
+      "time": "18:30",
       "title": {
         "en": "Grand Entrance",
         "ja": "開宴・新郎新婦入場",
@@ -54,7 +54,7 @@
       "icon": "party"
     },
     {
-      "time": "18:30",
+      "time": "19:00",
       "title": {
         "en": "Meal & Conversation",
         "ja": "お食事歓談",
@@ -63,7 +63,7 @@
       "icon": "meal"
     },
     {
-      "time": "19:00",
+      "time": "19:30",
       "title": {
         "en": "Photo Session",
         "ja": "フォトラウンド",
@@ -72,7 +72,7 @@
       "icon": "camera"
     },
     {
-      "time": "19:30",
+      "time": "20:00",
       "title": {
         "en": "Games & Entertainment",
         "ja": "余興・ゲーム",
@@ -81,7 +81,7 @@
       "icon": "party"
     },
     {
-      "time": "20:00",
+      "time": "20:30",
       "title": {
         "en": "Conclusion & Send-off",
         "ja": "お披楽喜・送賓",
